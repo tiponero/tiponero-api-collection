@@ -1,0 +1,40 @@
+meta {
+  name: List API Keys
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/v1/keys
+  body: none
+  auth: none
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("response has data array", function() {
+    expect(res.getBody().data).to.be.an('array');
+  });
+
+  test("keys have expected fields", function() {
+    var data = res.getBody().data;
+    if (data.length > 0) {
+      var key = data[0];
+      expect(key.id).to.be.a('string');
+      expect(key.name).to.be.a('string');
+      expect(key.prefix).to.be.a('string');
+      expect(key.created_at).to.be.a('number');
+      expect(key.expires_at).to.be.a('number');
+    }
+  });
+
+  test("save first api_key_id if exists", function() {
+    var data = res.getBody().data;
+    if (data.length > 0) {
+      bru.setEnvVar("api_key_id", data[0].id);
+    }
+  });
+}

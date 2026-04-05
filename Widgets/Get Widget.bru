@@ -1,0 +1,22 @@
+meta {
+  name: Get Widget
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/api/v1/widgets/{{widget_id}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("response has widget data", function() {
+    var data = res.getBody().data;
+    expect(data.id).to.equal(bru.getEnvVar("widget_id"));
+  });
+}

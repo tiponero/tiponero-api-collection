@@ -1,0 +1,38 @@
+meta {
+  name: Update Widget
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{base_url}}/api/v1/widgets/{{widget_id}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Updated Widget Name",
+    "button_text": "Support Us",
+    "primary_color": "#e64a19"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("fields updated correctly", function() {
+    var data = res.getBody().data;
+    expect(data.name).to.equal("Updated Widget Name");
+    expect(data.button_text).to.equal("Support Us");
+    expect(data.primary_color).to.equal("#e64a19");
+  });
+  
+  test("unchanged fields preserved", function() {
+    var data = res.getBody().data;
+    expect(data.mode).to.equal("donation");
+    expect(data.preset_amounts).to.deep.equal([0.01, 0.05, 0.1]);
+  });
+}

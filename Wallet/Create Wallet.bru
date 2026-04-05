@@ -1,0 +1,31 @@
+meta {
+  name: Create Wallet
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/v1/wallet
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "rpc_url": "http://127.0.0.1:18083",
+    "rpc_user": "monero",
+    "rpc_password": "secret",
+    "wallet_file": "wallet",
+    "wallet_password": "walletpass"
+  }
+}
+
+tests {
+  test("should return 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("response has id", function() {
+    expect(res.getBody().id).to.be.a('string');
+  });
+}

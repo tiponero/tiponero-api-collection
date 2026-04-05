@@ -1,0 +1,29 @@
+meta {
+  name: Update User
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{base_url}}/api/v1/user
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "bio": "Only updating the bio field"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("bio updated, other fields preserved", function() {
+    var data = res.getBody().data;
+    expect(data.bio).to.equal("Only updating the bio field");
+    expect(data.username).to.be.a('string');
+  });
+}

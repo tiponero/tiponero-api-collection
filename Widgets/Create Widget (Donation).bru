@@ -1,0 +1,38 @@
+meta {
+  name: Create Widget (Donation)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/v1/widgets
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Test Donation Widget",
+    "mode": "donation",
+    "preset_amounts": [0.01, 0.05, 0.1],
+    "button_text": "Donate",
+    "custom_message": "Support our project!",
+    "primary_color": "#ff6600",
+    "theme": "dark",
+    "show_stats": true
+  }
+}
+
+tests {
+  test("should return 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("response has id", function() {
+    expect(res.getBody().id).to.be.a('string');
+  });
+
+  test("save widget_id", function() {
+    bru.setEnvVar("widget_id", res.getBody().id);
+  });
+}

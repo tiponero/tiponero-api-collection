@@ -1,0 +1,26 @@
+meta {
+  name: Get Stats
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/v1/stats
+  body: none
+  auth: none
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("response has stats data", function() {
+    var data = res.getBody().data;
+    expect(data.total_transactions).to.be.a('number');
+    expect(data.total_amount).to.be.a('number');
+    expect(data.total_amount_xmr).to.be.a('string');
+    expect(data.pending_count).to.be.a('number');
+    expect(data.today_count).to.be.a('number');
+  });
+}

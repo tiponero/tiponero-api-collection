@@ -1,0 +1,567 @@
+opencollection: 1.0.0
+info:
+  name: Tiponero API
+config:
+  environments:
+    - name: Local
+      variables:
+        - name: base_url
+          value: http://localhost:8080
+        - name: widget_id
+          value: ''
+        - name: transaction_id
+          value: ''
+        - name: api_key_id
+          value: ''
+        - name: api_key
+          secret: true
+items:
+  - info:
+      name: API Keys
+      type: folder
+      seq: 1
+    items:
+      - info:
+          name: Delete API Key
+          type: http
+          seq: 2
+        http:
+          method: DELETE
+          url: '{{base_url}}/api/v1/keys/{{api_key_id}}'
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("response confirms deletion", function() {
+                  expect(res.getBody().deleted).to.be.a('string');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: List API Keys
+          type: http
+          seq: 1
+        http:
+          method: GET
+          url: '{{base_url}}/api/v1/keys'
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("response has data array", function() {
+                  expect(res.getBody().data).to.be.an('array');
+                });
+
+                test("keys have expected fields", function() {
+                  var data = res.getBody().data;
+                  if (data.length > 0) {
+                    var key = data[0];
+                    expect(key.id).to.be.a('string');
+                    expect(key.name).to.be.a('string');
+                    expect(key.prefix).to.be.a('string');
+                    expect(key.created_at).to.be.a('number');
+                    expect(key.expires_at).to.be.a('number');
+                  }
+                });
+
+                test("save first api_key_id if exists", function() {
+                  var data = res.getBody().data;
+                  if (data.length > 0) {
+                    bru.setEnvVar("api_key_id", data[0].id);
+                  }
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+  - info:
+      name: Stats
+      type: folder
+      seq: 2
+    items:
+      - info:
+          name: Get Stats
+          type: http
+          seq: 1
+        http:
+          method: GET
+          url: '{{base_url}}/api/v1/stats'
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("response has stats data", function() {
+                  var data = res.getBody().data;
+                  expect(data.total_transactions).to.be.a('number');
+                  expect(data.total_amount).to.be.a('number');
+                  expect(data.total_amount_xmr).to.be.a('string');
+                  expect(data.pending_count).to.be.a('number');
+                  expect(data.today_count).to.be.a('number');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+  - info:
+      name: Transactions
+      type: folder
+      seq: 3
+    items:
+      - info:
+          name: Get Transaction
+          type: http
+          seq: 2
+        http:
+          method: GET
+          url: '{{base_url}}/api/v1/transactions/{{transaction_id}}'
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("response has transaction data", function() {
+                  var data = res.getBody().data;
+                  expect(data.id).to.equal(bru.getEnvVar("transaction_id"));
+                  expect(data.status).to.be.a('string');
+                  expect(data.amount).to.be.a('number');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: List Transactions
+          type: http
+          seq: 1
+        http:
+          method: GET
+          url: '{{base_url}}/api/v1/transactions'
+          params:
+            - name: page
+              value: '1'
+              type: query
+              disabled: true
+            - name: limit
+              value: '20'
+              type: query
+              disabled: true
+            - name: status
+              value: ''
+              type: query
+              disabled: true
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("response has data array and pagination", function() {
+                  expect(res.getBody().data).to.be.an('array');
+                  expect(res.getBody().pagination).to.be.an('object');
+                  expect(res.getBody().pagination.page).to.be.a('number');
+                  expect(res.getBody().pagination.total).to.be.a('number');
+                });
+
+                test("save first transaction_id if exists", function() {
+                  var data = res.getBody().data;
+                  if (data.length > 0) {
+                    bru.setEnvVar("transaction_id", data[0].id);
+                  }
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+  - info:
+      name: User
+      type: folder
+      seq: 4
+    items:
+      - info:
+          name: Get User
+          type: http
+          seq: 1
+        http:
+          method: GET
+          url: '{{base_url}}/api/v1/user'
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("response has user data", function() {
+                  var data = res.getBody().data;
+                  expect(data.id).to.be.a('string');
+                  expect(data.username).to.be.a('string');
+                  expect(data.has_2fa).to.be.a('boolean');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Update User
+          type: http
+          seq: 2
+        http:
+          method: PATCH
+          url: '{{base_url}}/api/v1/user'
+          body:
+            type: json
+            data: |-
+              {
+                "bio": "Only updating the bio field"
+              }
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("bio updated, other fields preserved", function() {
+                  var data = res.getBody().data;
+                  expect(data.bio).to.equal("Only updating the bio field");
+                  expect(data.username).to.be.a('string');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+  - info:
+      name: Wallet
+      type: folder
+      seq: 5
+    items:
+      - info:
+          name: Create Wallet
+          type: http
+          seq: 1
+        http:
+          method: POST
+          url: '{{base_url}}/api/v1/wallet'
+          body:
+            type: json
+            data: |-
+              {
+                "rpc_url": "http://127.0.0.1:18083",
+                "rpc_user": "monero",
+                "rpc_password": "secret",
+                "wallet_file": "wallet",
+                "wallet_password": "walletpass"
+              }
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 201", function() {
+                  expect(res.getStatus()).to.equal(201);
+                });
+
+                test("response has id", function() {
+                  expect(res.getBody().id).to.be.a('string');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Get Wallet
+          type: http
+          seq: 2
+        http:
+          method: GET
+          url: '{{base_url}}/api/v1/wallet'
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("response has wallet data without passwords", function() {
+                  var data = res.getBody().data;
+                  expect(data).to.have.property('id');
+                  expect(data).to.have.property('rpc_url');
+                  expect(data).to.have.property('connected');
+                  expect(data).to.not.have.property('rpc_password');
+                  expect(data).to.not.have.property('wallet_password');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Update Wallet
+          type: http
+          seq: 3
+        http:
+          method: PATCH
+          url: '{{base_url}}/api/v1/wallet'
+          body:
+            type: json
+            data: |-
+              {
+                "rpc_url": "http://127.0.0.1:18083"
+              }
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("rpc_url updated", function() {
+                  var data = res.getBody().data;
+                  expect(data.rpc_url).to.equal("http://127.0.0.1:18083");
+                });
+
+                test("passwords not exposed", function() {
+                  var data = res.getBody().data;
+                  expect(data).to.not.have.property('rpc_password');
+                  expect(data).to.not.have.property('wallet_password');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+  - info:
+      name: Widgets
+      type: folder
+      seq: 6
+    items:
+      - info:
+          name: Create Widget (Donation)
+          type: http
+          seq: 2
+        http:
+          method: POST
+          url: '{{base_url}}/api/v1/widgets'
+          body:
+            type: json
+            data: |-
+              {
+                "name": "Test Donation Widget",
+                "mode": "donation",
+                "preset_amounts": [0.01, 0.05, 0.1],
+                "button_text": "Donate",
+                "custom_message": "Support our project!",
+                "primary_color": "#ff6600",
+                "theme": "dark",
+                "show_stats": true
+              }
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 201", function() {
+                  expect(res.getStatus()).to.equal(201);
+                });
+
+                test("response has id", function() {
+                  expect(res.getBody().id).to.be.a('string');
+                });
+
+                test("save widget_id", function() {
+                  bru.setEnvVar("widget_id", res.getBody().id);
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Create Widget (Payment)
+          type: http
+          seq: 3
+        http:
+          method: POST
+          url: '{{base_url}}/api/v1/widgets'
+          body:
+            type: json
+            data: |-
+              {
+                "name": "Test Payment Widget",
+                "mode": "payment",
+                "preset_amounts": [0.5],
+                "button_text": "Pay",
+                "custom_message": "Complete your purchase",
+                "primary_color": "#ff6600",
+                "theme": "dark",
+                "redirect_url": "https://example.com/thank-you"
+              }
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 201", function() {
+                  expect(res.getStatus()).to.equal(201);
+                });
+
+                test("response has id", function() {
+                  expect(res.getBody().id).to.be.a('string');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Delete Widget
+          type: http
+          seq: 6
+        http:
+          method: DELETE
+          url: '{{base_url}}/api/v1/widgets/{{widget_id}}'
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("response confirms deletion", function() {
+                  expect(res.getBody().deleted).to.be.a('string');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Get Widget
+          type: http
+          seq: 4
+        http:
+          method: GET
+          url: '{{base_url}}/api/v1/widgets/{{widget_id}}'
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("response has widget data", function() {
+                  var data = res.getBody().data;
+                  expect(data.id).to.equal(bru.getEnvVar("widget_id"));
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: List Widgets
+          type: http
+          seq: 1
+        http:
+          method: GET
+          url: '{{base_url}}/api/v1/widgets'
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("response has data array", function() {
+                  expect(res.getBody().data).to.be.an('array');
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+      - info:
+          name: Update Widget
+          type: http
+          seq: 5
+        http:
+          method: PATCH
+          url: '{{base_url}}/api/v1/widgets/{{widget_id}}'
+          body:
+            type: json
+            data: |-
+              {
+                "name": "Updated Widget Name",
+                "button_text": "Support Us",
+                "primary_color": "#e64a19"
+              }
+        runtime:
+          scripts:
+            - type: tests
+              code: |-
+                test("should return 200", function() {
+                  expect(res.getStatus()).to.equal(200);
+                });
+
+                test("fields updated correctly", function() {
+                  var data = res.getBody().data;
+                  expect(data.name).to.equal("Updated Widget Name");
+                  expect(data.button_text).to.equal("Support Us");
+                  expect(data.primary_color).to.equal("#e64a19");
+                });
+
+                test("unchanged fields preserved", function() {
+                  var data = res.getBody().data;
+                  expect(data.mode).to.equal("donation");
+                  expect(data.preset_amounts).to.deep.equal([0.01, 0.05, 0.1]);
+                });
+        settings:
+          encodeUrl: true
+          timeout: 0
+          followRedirects: true
+          maxRedirects: 5
+request:
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer {{api_key}}
+bundled: true
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
+    exportedAt: '2026-04-05T20:40:45.284Z'
+    exportedUsing: Bruno

@@ -1,0 +1,26 @@
+meta {
+  name: Get Wallet
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/api/v1/wallet
+  body: none
+  auth: none
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("response has wallet data without passwords", function() {
+    var data = res.getBody().data;
+    expect(data).to.have.property('id');
+    expect(data).to.have.property('rpc_url');
+    expect(data).to.have.property('connected');
+    expect(data).to.not.have.property('rpc_password');
+    expect(data).to.not.have.property('wallet_password');
+  });
+}
